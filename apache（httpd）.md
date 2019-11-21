@@ -188,9 +188,63 @@ listen  80
         DocumentRoot    /usr/local/httpd/htdocs/zry
         ServerName www.zry.com
 </VirtualHost>
-<VirtualHost 192.168.10.2:8080>
+<VirtualHost 192.168.10.2:>
         DocumentRoot    /usr/local/httpd/htdocs/dabai
         ServerName www.dabai.com
 </VirtualHost>
 
 systemctl restart httpd
+
+## apache的三种模式
+
+prefork模式	单线程模式
+
+当apache服务启动后，mpm_prefork模块会预先创建多个子进程，每个子进程只有一个线程，当接收到客户端的请求后，mpm_prefork将这些请求交给子进程处理，每个子进程只能用于处理单个请求，如果请求超过预先创建的子进程数，就会创建新的子进程。
+但是对于高并发的环境不适用    如果请求量不大，处理的速度会非常的快
+worker模式   多线程或进程
+worker使用了多进程和多线程的 混合模式，worker模式也同样会预派生成一些子进程，然后每个子进程生成一些线程，包括一个监听的线程，每个请求过来会被分配到一个线程来服务，线程比进程更轻量，因此，内存的占用会减少一些，更适用于高并发。
+但是他不能主动断开长连接，只有超时后，才会断开长连接
+event（worker+epoll）
+最新的apache的工作模式，在worker的基础上，它把服务的进程从连接中分离出来，worker模式不同的是它解决了keepalive长连接占用资源的浪费的问题  event工作模式会专门派一些线程来管理keepalive的连接，可以断开连接，更好的兼容了高并发    但是他不能很好的支持https的访问
+主进程  --  子进程  --  线程
+prefork    一个子进程  --- 一个线程  （一个人干一件事）
+worker     一个子进程 ----多个线程  （一个人干多件事）
+event       一个子进程  ---keepalive的进程 
+
+cd /usr/local/httpd/bin/
+
+ ./apachectl -V
+
+显示的工作模式为
+
+Server MPM:     worker
+
+cd /usr/local/httpd/conf/extra/
+
+vim httpd-mpm.conf 
+
+<IfModule mpm_prefork_module>
+    StartServers             5	#服务器启动时创建子进程的数量
+    MinSpareServers          5	#空闲子进程的数量
+    MaxSpareServers         10	#空闲子进程的最大数量
+    MaxRequestWorkers      250	#最大工作的子进程数量
+    MaxConnectionsPerChild   0	#子进程连接线程的数量	这里为0	代表这个子进程不会消失
+</IfModule>
+
+vim /usr/local/httpd/conf/httpd.conf 
+
+两个工作模式禁用一个
+
+LoadModule mpm_prefork_module modules/mod_mpm_prefork.so
+
+#LoadModule mpm_worker_module modules/mod_mpm_worker.so
+
+Include conf/extra/httpd-mpm.conf
+
+systemctl restart httpd
+
+cd /usr/local/httpd/bin/
+
+./apachectl -V	#查看工作模式
+
+Server MPM:     prefork
