@@ -54,7 +54,7 @@ nginx  -s  reload
 
 firefox http://127.0.0.1/status
 
-![](image/安装nginx/11.gif)
+![](image/安装nginx/11-1574827945197.gif)
 
 Active connections: 1 	#当前活动的链接数
 server accepts handled requests	
@@ -83,7 +83,7 @@ cp objs/nginx /usr/local/nginx/sbin/
 
 ls /usr/local/nginx/sbin/
 
-![](image/安装nginx/12.gif)
+![](image/安装nginx/12-1574827963376.gif)
 
 kill -USR2 `cat /usr/local/nginx/logs/nginx.pid`
 
@@ -91,5 +91,5 @@ netstat -anput | grep nginx
 
 nginx -v
 
-![](image/安装nginx/13.gif)
+![](image/安装nginx/13-1574827985821.gif)
 
