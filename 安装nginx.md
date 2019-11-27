@@ -92,3 +92,4 @@ netstat -anput | grep nginx
 nginx -v
 
 ![](D:\github\jichufuwu\image\Untitled\13.gif)
+
