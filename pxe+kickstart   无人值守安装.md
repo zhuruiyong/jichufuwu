@@ -55,7 +55,7 @@ cd /var/lib/tftpboot/         #tftp的传输文件目录
 [root@localhost tftpboot]# ls
 boot.cat  boot.msg  initrd.img  pxelinux.0  splash.png  vesamenu.c32  vmlinuz
 
-[root@localhost tftpboot]# mkdir  pxelinux.cfg  建立引导配置文件
+[root@localhost tftpboot]# mkdir  pxelinux.cfg  建立配置文件目录
 
 [root@localhost tftpboot]# cp /media/isolinux/isolinux.cfg pxelinux.cfg/default		#将引导程序的配置文件复制并改名  改名为default是为了直接能去安装操作系统
 
