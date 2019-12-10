@@ -96,3 +96,20 @@ yum -y install  vsftpd
 systemctl restart vsftpd
 
 测试  网络适配器必须相同    内存2g  不用指定镜像
+
+
+
+## 无人值守安装的原理：
+
+​	1.client通过room自动启动芯片启动系统，并发送一个广播请求ip（dhcp）
+
+​	2.服务端会返回一个响应，响应内容中包含ip和启动程序pxelinux.0文件所在的目录和位置
+
+​	3.client将会个服务端一个响应，向服务端获取自己所需要的引导文件按  pxelinux.0(isolinux.bin)	pxelinux.cfg/default(isolinux.cfg)	vmlinuz  initrd.img等文件
+
+​	4.服务端通过tftp传输文件
+
+​	5.通过引导文件安装引导内核，通过default的配置，选择安装源，为网络安装源，通过default里面指定的ks.cfg的路径去获取kickstart的配置文件
+
+​	6.在通过ks.cfg中的文件中的内容，使用ftp传输所有的安装包，并进行安装
+
