@@ -63,7 +63,7 @@ boot.cat  boot.msg  initrd.img  pxelinux.0  splash.png  vesamenu.c32  vmlinuz
 
   1 default linux		#默认去选择直接安装
 
- 64   append initrd=initrd.img inst.stage2=ftp://192.168.10.1/centos ks=ftp://19    2.168.10.1/centos/ks.cfg quiet   			#指定整个操作系统所需要的文件所在的目录和kickstart的配置文件所在的位置
+ 64   append initrd=initrd.img inst.stage2=ftp://192.168.10.1/centos ks=ftp://192.168.10.1/centos/ks.cfg quiet   			#指定整个操作系统所需要的文件所在的目录和kickstart的配置文件所在的位置
 
 [root@localhost tftpboot]# systemctl restart xinetd
 [root@localhost tftpboot]# systemctl restart tftp
@@ -84,14 +84,14 @@ yum -y install  vsftpd
 [root@localhost centos]# vim /var/ftp/centos/ks.cfg 
 
   5 #cdrom
-  6 url --url=ftp://192.168.10.1/centos
+  6 url --url=ftp://192.168.10.1/centos		#使用ftp网络安装
 
- 26 timezone Asia/Shanghai --isUtc
+ 26 timezone Asia/Shanghai --isUtc		#时间同步
 
- 33 clearpart --all --initlabel 
+ 33 clearpart --all --initlabel 			#清空对磁盘的所有操作
 
- 71 reboot
- 72 eula  --agreed
+ 71 reboot								  # 重启 
+ 72 eula  --agreed						#同意协议	
 
 systemctl restart vsftpd
 
