@@ -407,4 +407,3 @@ handlers	触发器
 [root@localhost /]# ansible-playbook --syntax-check nginx.yaml
 
 [root@localhost /]# ansible-playbook  nginx.yaml
-
