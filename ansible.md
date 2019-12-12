@@ -330,3 +330,81 @@ ansible all -m service -a 'name=smb state=started'
 
 [root@localhost ~]# ansible all  -m file -a 'path=/eee state=hard src=/heihei'
 
+## #12.cron：	远程主机上添加计划任务
+
+minute分钟	hour小时	day天  mounth月	weekday周 	job：执行的命令	name：对计划任务的命名	special_time=hourly每小时  
+
+[root@localhost ~]# ansible all -m cron -a "name=1 hour=8 minute=10 job='echo xixi'"
+
+查看计划任务
+
+[root@localhost ~]# ansible all -m shell -a 'crontab -l'
+
+## # 13.lineinfile	regexp正则匹配    line	将匹配到的内容更改为指定的内容
+
+[root@localhost ~]# ansible all -m file -a 'path=/lijunyi state=touch'
+
+[root@localhost ~]# ansible all -m  shell -a "echo 'liergoushilijunyi' > /lijunyi"
+
+[root@localhost ~]# ansible all -m  shell -a "cat /lijunyi"
+
+[root@localhost ~]# ansible all -m lineinfile -a "regexp='^l' line='lijunyishiliergou' path=/lijunyi"
+
+[root@localhost ~]# ansible all -m  shell -a "cat /lijunyi"
+
+## playbook剧本
+
+playbook是由多个模块组成的
+
+yaml：yaml语言时有多个语言集合而成的  c语言 python ruby  perl
+
+后缀名为  yaml  yml
+
+语法格式
+
+---	代表是一个yaml文件
+
+区分大小写
+
+层级关系时缩进	要使用空格	不能tab
+
+#注释
+
+数据类型
+
+对象	name：value
+
+数组	-food	代表组
+
+字符串
+
+数字
+
+yaml文件的含义
+
+task	任务	要调用模块前的操作
+
+variables	变量
+
+handlers	触发器
+
+[root@localhost ~]# cd /
+[root@localhost /]# vim nginx.yaml
+
+---
+    - hosts: webserver
+      remote_user: root
+      tasks:
+        - yum: name=pcre-devel,gcc*,zlib,zlib-devel state=installed
+        - copy: src=/root/nginx-1.6.0.tar.gz  dest=/usr/src/nginx-1.6.0.tar.gz
+        - shell: cd /usr/src && tar -zxf nginx-1.6.0.tar.gz
+        - user: name=nginx shell=/sbin/nologin
+        - shell: cd /usr/src/nginx-1.6.0 && ./configure --prefix=/usr/local/nginx --user=nginx --group=nginx && make && make install
+        - file: path=/usr/local/sbin/nginx state=link src=/usr/local/nginx/sbin/nginx
+        - shell: nginx
+检测写的内容是否出问题
+
+[root@localhost /]# ansible-playbook --syntax-check nginx.yaml
+
+[root@localhost /]# ansible-playbook  nginx.yaml
+
