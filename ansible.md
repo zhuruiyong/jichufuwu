@@ -285,3 +285,48 @@ mode：指定文件的权限
 ## #8.setup	可以查看远程主机的信息
 
 [root@localhost ~]# ansible all -m setup 
+
+## #9.yum：在远程主机上使用yum安装软件
+
+参数：
+
+state=installed	安装软件包	state=removed	卸载软件包  disable_gpg_check	取消密钥验证sta
+
+[root@localhost ~]# ansible all -m yum -a 'name=samba state=installed'
+
+## #10.service：	管理远程主机上的服务
+
+name	服务名	state：stared开启	restarted重启	reload重新加载 stopped停止	enabled=yes	开机自启
+
+ansible all -m service -a 'name=smb state=started'
+
+[root@localhost ~]# ansible all -m service -a 'name=smb state=started'
+
+## #11.file模块	创建或删除远程主机上的文件/目录
+
+参数 path	指定文件	如果目标主机不存在	则创建
+
+​	state	创建文件的类型	例子	state=touch
+
+​	touch文件	directory目录  link软连接	hard硬链接
+
+​	owner	属主
+
+​	group	属组
+
+​	mode	权限
+
+​	state=absent	删除文件或者目录
+
+[root@localhost ~]# ansible all -m file -a 'path=/heihei state=touch'
+
+[root@localhost ~]# ansible all -m file -a 'path=/hehe state=directory'
+
+[root@localhost ~]# ansible all -m file -a 'path=/hehe owner=zry group=zry mode=755'
+
+硬链接针对文件	软连接针对文件或目录
+
+[root@localhost ~]# ansible all -m file -a 'path=/www state=link src=/hehe'
+
+[root@localhost ~]# ansible all  -m file -a 'path=/eee state=hard src=/heihei'
+
