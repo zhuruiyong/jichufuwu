@@ -187,11 +187,10 @@ iptables -F  -t  nat  清空nat表的设置  （如果上面打错的话）
 
 客户端验证：
 
-[root@localhost ~]# firefox http://192.168.2.30
+[root@localhost ~]# firefox http://192.168.10.1
 
 服务端日志打开：
 
 [root@localhost ~]# tail -f /var/log/httpd/access_log 
 
 192.168.10.2 - - [13/Dec/2019:10:13:37 +0800] "GET / HTTP/1.1" 304 - "-" "Mozilla/5.0 (X11; Linux x86_64; rv:52.0) Gecko/20100101 Firefox/52.0" 
-
