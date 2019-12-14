@@ -194,3 +194,114 @@ iptables -F  -t  nat  清空nat表的设置  （如果上面打错的话）
 [root@localhost ~]# tail -f /var/log/httpd/access_log 
 
 192.168.10.2 - - [13/Dec/2019:10:13:37 +0800] "GET / HTTP/1.1" 304 - "-" "Mozilla/5.0 (X11; Linux x86_64; rv:52.0) Gecko/20100101 Firefox/52.0" 
+
+## 访问控制列表（正向和反向）
+
+acl   列表名称	列表选项	列表内容
+
+列表名称是唯一的
+
+代理端
+
+[root@localhost ~]# vim /etc/squid.conf
+
+src  对于源地址的限制	对客户端的ip进行限制	可以是网段、也可以是ip
+
+ 26 acl qq src 192.168.20.3
+ 27 http_access deny qq
+
+killall  squid  重启squid
+
+squid
+
+去客户端访问 firefox http://192.168.10.1
+
+## dst	对目标地址进行限制
+
+代理端
+
+vim  /etc/squid.conf
+
+acl qq dst 192.168.10.1
+
+http_access deny qq
+
+killall  squid  
+
+squid
+
+客户端访问  firefox  http://192.168.10.1
+
+## dstdomain	对客户端访问的域名进行限制
+
+代理端
+
+vim  /etc/squid.conf
+
+acl qq dstdomain www.kgc.com
+
+http_access deny qq
+
+killall  squid
+
+squid
+
+客户端
+
+vim  /etc/hosts
+
+192.168.168.10.1  www.kgc.com
+
+访问 firefox  http://www.kgc.com
+
+## port  对客户端的端口进行限制
+
+代理端
+
+vim /etc/squid.conf
+
+acl qq port 80
+
+http_access deny qq
+
+去客户端访问  firefox  http://192.168.10.1:80
+
+## time   对客户端访问的时间进行限制
+
+S  周日  M 周一  T周二  W周三  H周四  F周五  A周六
+
+D  M-F  周一到周五
+
+代理端
+
+vim  /etc/squid.conf
+
+acl qq time MTW 08:30-12：30
+http_access deny qq
+
+客户端去访问 firefox http://192.168.10.1   在周一到周三8：30到12：80是拒绝访问的
+
+## arp 对客户端的mac地址进行限制
+
+代理端
+
+vim  /etc/squid.conf
+
+acl qq arp 00:0c:29:cd:95:6d
+http_access deny qq
+
+去客户端复制mac地址写到代理端http://192.168.10.1
+
+去客户端访问 firefox  http://192.168.10.1
+
+## url_regex  通过正则匹配对客户端的url进行限制
+
+代理端
+
+vim  /etc/squid.conf
+
+acl qq url_regex kgc
+
+http_access deny qq
+
+客户端去访问  firefox http://www.kgc.com     
