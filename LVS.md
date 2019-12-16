@@ -97,6 +97,16 @@ ipvsadm -d -r 192.168.10.1：80 -t 192.168.20.20：80	#删除真实节点
 
 ipvsadm -D　-r   192.168.10.1：80   #删除集群
 
+客户端去访问
+
+curl 192.168.10.1
+
+11111
+
+curl192.168.10.1
+
+22222
+
 ## DR模式	直接路由	要求客户端和后端服务器处于同一个物理网络下服务端将响应直接返回给客户端	不需要经过负载均衡服务器
 
 客户端	192.168.2.100
@@ -138,10 +148,15 @@ systemctl restart network
 [root@localhost network-scripts]# vim /etc/sysctl.conf 
 
 net.ipv4.conf.lo.arp_ignore = 1
+
 net.ipv4.conf.all.arp_ignore = 1
+
 net.ipv4.conf.default.arp_ignore = 1
+
 net.ipv4.conf.lo.arp_announce = 2
+
 net.ipv4.conf.all.arp_announce = 1
+
 net.ipv4.conf.default.arp_announce = 2
 
 [root@localhost network-scripts]# route add -host 192.168.2.200 dev lo:0
@@ -165,4 +180,3 @@ web2  同web1 配置
 [root@localhost ~]# curl 192.168.2.200
 
 11111
-
