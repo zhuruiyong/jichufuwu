@@ -277,6 +277,7 @@ D  M-F  周一到周五
 vim  /etc/squid.conf
 
 acl qq time MTW 08:30-12：30
+
 http_access deny qq
 
 客户端去访问 firefox http://192.168.10.1   在周一到周三8：30到12：80是拒绝访问的
