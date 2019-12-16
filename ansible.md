@@ -119,8 +119,7 @@ Connection to 192.168.10.3 closed.
 
 验证密钥去客户端
 
-[root@localhost ~]# ls .ssh
-authorized_keys
+[root@localhost ~]# ls .ssh authorized_keys
 [root@localhost ~]# cat .ssh/authorized_keys 
 ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABAQDPN8U5jCyYMM7N//KyujlbKAkksVyqlOilPvC5sPzLYQCCg+cky4eYFHYJPFAv+9lKxpVPp+x9C1juK4j20oHIGczufcLzE5BBw5pizDdhtlEo0YOvLNYqr3H4+o1Rrh2YLcrhIP8oR3GnYpXEjNGbwpryyCuemy+Tq8YLQd1EPDVfxXIOxr4lS9vQcLn7wsVnLvh6O8ZTxdz78AeyNC2CpaSF5vfGVJxq/J+oba575LosxNzbEr8C/0vSeL2pfypD8/CePKdcXujQMfZZjjDFluAc0bsEr4Pdf7VR0BIEzOzWUVFQDIw9O+I95aUboLAInRYt+++1UUUEiOuzlMc9 root@localhost.localdomain
 
