@@ -1,3 +1,5 @@
+
+
 # 		varnish
 
 # 反向代理
@@ -444,4 +446,237 @@ curl -I  192.168.10.1
 第一次为miss
 
 ![](image/varnish/varnish3.gif)
+
+## 多主机实例：
+
+```
+[root@localhost varnish-4.1.11]# vim /usr/local/varnish/default.vcl
+probe health {
+      .url = "/";
+      .timeout = 3s;
+      .interval = 1s;
+      .window = 5;
+      .threshold = 3;
+}
+backend web1 {
+    .host = "192.168.10.20";
+    .port = "80";
+    .probe = health;
+    .max_connections = 100;
+}
+backend web2 {
+    .host = "192.168.10.30";
+    .port = "80";
+    .probe = health;
+    .max_connections = 100;
+}
+acl allow {
+        "127.0.0.1";
+        "localhost";
+        "192.168.0.1";
+}
+sub vcl_init{
+        new back=directors.round_robin();
+        back.add_backend(web1);
+        back.add_backend(web2);
+}
+sub vcl_recv{
+        if(req.method == "PURGE"){
+                if(client.ip !~ allow ) {
+                        return(synth(405,"not allowed"));
+                }
+                else{
+                        return(purge);
+                }
+        }
+        if(req.http.host ~ "^img"){
+                set req.backend_hint = web1;
+        }
+        if(req.http.host ~ "^www"){
+                set req.backend_hint = web2;
+        }
+        if(req.url ~ "\.(php|asp|aspx|jsp|do)($|\?)"){
+                return(pass);
+        }
+        if(req.url ~ "\.(css|html|png|jpeg|htm)($|\?)"){
+                return(hash);
+        }
+        if(req.method != "GET" &&
+          req.method != "POST" &&
+          req.method != "PUT" &&
+          req.method != "DELETE" &&
+          req.method != "HEAD"
+           ){
+                return(pipe);
+        }
+        if(req.method != "GET" && req.method != "HEAD"){
+                return(pass);
+        }
+        if(req.http.Authorization){
+                return(pass);
+        }
+        if(req.http.Accept-Enconding){
+                if(req.url ~ "\.(png|gif|jpeg|gz|zip)"){
+                        unset req.http.Accept-Enconding;
+                }
+                elseif(req.http.Accept-Enconding ~ "gzip"){
+                        set req.http.Accept-Enconding = "gzip";
+                }
+                elseif(req.http.Accept-Enconding ~ "deflate"){
+                        set req.http.Accept-Enconding = "deflate";
+}
+                else{
+                        unset req.http.Accept-Enconding;
+                }
+        }
+}
+sub vcl_pipe{
+        return(pipe);
+}
+sub vcl_pass{
+        return(fetch);
+}
+sub vcl_hash{
+        hash_data(req.url);
+                if(req.http.host){
+                        hash_data(req.http.host);
+                }
+                else{
+                        hash_data(server.ip);
+                        if(req.http.Accept-Enconding ~ "gzip"){
+                        hash_data("gzip");
+                        }
+                        elseif(req.http.Accept-Enconding ~ "deflate"){
+                        hash_data("deflate");
+                        }
+                }
+}
+sub vcl_hit{
+        return(deliver);
+}
+sub vcl_miss{
+        return(fetch);
+}
+sub vcl_backend_response{
+        if(bereq.url ~ "\.(php|asp|jsp|do)($|\?)"){
+                set beresp.uncacheable=true;
+                return(deliver);
+        }
+        if(bereq.url ~ "\.(css|html|htm|jpg|png)($|\?)"){
+                set beresp.ttl = 15m;
+        }
+        if(bereq.url ~ "\.(gz|bz2|zip|mp3|mp4)($|\?)"){
+                set beresp.ttl =300s;
+        }
+                return(deliver);
+}
+sub vcl_purge{
+        return(synth(200,"success~~~"));
+}
+sub vcl_deliver{
+        if(obj.hits > 0){
+                set resp.http.X-Cache = "hit~~~~~";
+        }
+        else{
+                set resp.http.X-Cache = "miss~~~~~";
+        }
+        return(deliver);
+}
+varnish启动参数
+varnishd：
+   -f：指定varnish配置文件所在位置
+   -a：指定varnish对后端服务节点监控使用的端口及IP
+       -a 192.168.10.100:80
+   -n：指定varnish工作目录
+   -P：指定varnish服务运行时进程号存放文件
+       -P  /usr/local/varnish/varnish.pid
+   -s：指定varnish缓存数据的文件，文件所在地，缓存文件的大小
+       -s file,/usr/local/varnish/cache.data,1G
+   -T：定义远程管理varnish的主机及端口
+       -T 192.168.10.100:3500
+   -S：指定远程管理所需密钥所在位置
+       -S /etc/vc
+   -p：指定varnish运行时的参数
+      -p thread_pools=2：指定varnish运行时开启的线程池的数量，跟CPU个数一致
+      -p thread_pool_min=50：一个线程池中最少开启的线程数
+      -p thread_pool_max=5000：一个线程池最大开启的线程数
+      -p thread_pool_timeout=30：线程池等待连接超时时间，单位s，如果线程池中的开启的线程数量大于规定的最小值且30s内没有客户端的请求，则将超出最小值的线程释放掉
+      -p  lru_interval=20：当缓存的数据没有设置缓存时间时，在20s内未被命中则释放掉该数据
+```
+
+[root@localhost varnish-4.1.11]# varnishd -C -f /usr/local/varnish/default.vcl
+
+[root@localhost varnish-4.1.11]# killall varnishd
+
+[root@localhost varnish-4.1.11]# varnishd  -f /usr/local/varnish/default.vcl
+
+可以在varnish上清除缓存
+
+[root@localhost ~]# curl -I http://192.168.2.1 -X PURGE
+
+客户端访问：
+
+![](image/varnish/varnish4.gif)
+
+## 远程管理varnish
+
+```
+[root@localhost varnish-4.1.11]# killall varnishd
+[root@localhost varnish-4.1.11]# varnishd -a 192.168.10.1:80 -f  /usr/local/varnish/default.vcl  -n /usr/local/varnish  -P /usr/local/varnish/varnish.pid  -s  file,/usr/local/varnish/cache.data,1G  -T 192.168.10.1:3500  -S /etc/vc  -p thread_pools=2  -p thread_pool_min=50  -p thread_pool_max=1000  -p thread_pool_timeout=30 -p lru_interval=20
+[root@localhost varnish-4.1.11]# varnishadm -T 192.168.10.1:3500 -S /etc/vc
+varnish> ping
+200        
+PONG 1576897039 1.0
+
+varnish> status
+200        
+Child in state running
+
+varnish> stop
+200        
+
+start
+varnish> 
+200        
+
+varnish> start
+300        
+Child in state running
+
+varnish> backend.list
+200        
+Backend name                   Admin      Probe
+boot.web1                      probe      Healthy 5/5
+boot.web2                      probe      Healthy 5/5
+
+```
+
+![](image/varnish/varnish5.gif)
+
+```
+varnish状态  参数
+[root@localhost varnish-4.1.11]# cd /usr/local/varnish/
+[root@localhost varnish]# cp _.vsm /usr/local/varnish/var/varnish/localhost.localdomain/_.vsm 
+[root@localhost varnish]# varnishstat
+
+```
+
+varnishncsa用来简单查看日志
+
+```
+[root@localhost varnish]# varnishlog -n /usr/local/varnish/ -w /usr/local/varnish/varnish.log
+客户端访问
+[root@localhost ~]# curl -I 192.168.10.1
+打开另一个终端会看但看不懂的日志
+[root@localhost ~]# cat /usr/local/varnish/varnish.log 
+使日志能看懂
+[root@localhost varnish]# rm -rf /usr/local/varnish/varnish.log 
+[root@localhost varnish]# varnishncsa -n /usr/local/varnish/ -w /usr/local/varnish/varnish.log
+客户端访问
+[root@localhost ~]# curl -I 192.168.10.1
+varnish打开另一个终端
+[root@localhost ~]# cat /usr/local/varnish/varnish.log 
+192.168.10.10 - - [21/Dec/2019:11:08:05 +0800] "HEAD http://192.168.10.1/ HTTP/1.1" 200 0 "-" "curl/7.29.0"
+
+```
 
