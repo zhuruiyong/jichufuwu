@@ -117,7 +117,8 @@ deleting cc
 
 sent 176 bytes  received 24 bytes  133.33 bytes/sec
 total size is 2  speedup is 0.01
-
+主机B：
+ls
 另一种方式去拉取：
 主机B：
 [root@localhost test2]# ssh-keygen 
