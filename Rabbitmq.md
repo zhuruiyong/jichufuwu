@@ -121,3 +121,51 @@ one
 123.com
 ```
 
+添加虚拟主机
+
+给haha虚拟主机设置权限
+
+设定用户
+
+添加策略
+
+Name  策略名称   随便起
+
+Pattern   匹配规则   默认所有的消息
+
+Apply  to   直接绑定
+
+Priority   优先级
+
+Definition   all   复制给所有的节点
+
+将策略和queue绑定
+
+Virtual  host  虚拟主机
+
+Name   选择策略的名称  
+
+Durability   持久化
+
+Node   数据的主节点
+
+Auto  delete  自动删除不必要的消息
+
+验证：  模拟发送一个消息
+
+点击到首页
+
+[root@one ~]# cd /var/lib/rabbitmq/mnesia/rabbit@one/queues/
+
+[root@one queues]# ls
+
+39NHM0Y1XCXX5WMAK7APKSM7B
+
+[root@two ~]# cd /var/lib/rabbitmq/mnesia/rabbit@two/queues/
+
+[root@two queues]# ls
+
+39NHM0Y1XCXX5WMAK7APKSM7B
+
+![](image/Rabbitmq/rabbitmq-1577668829438.gif)
+
