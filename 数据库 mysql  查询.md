@@ -95,5 +95,82 @@ count  表示数量，表示输出多少条
 
 求水果表中价格最高的水果记录
 mysql> select * from fruits order by f_price desc limit 1;
+
+
+```
+
+```
+连接查询，查询两个或者两个以上的表中的内容
+（1）内连接
+内连接使用比较运算符，进行表与表之间的列数据的比较操作，并且显示表中与连接条件相匹配的内容，组成新的内容，相当于只输出符合条件的数据。
+表名 [inner] join 表名 on 条件判断
+mysql> select suppliers.s_id,s_name,f_name,f_price from suppliers,fruits where fruits.s_id=suppliers.s_id;
+mysql> select suppliers.s_id,s_name,f_name,f_price from suppliers inner join fruits on fruits.s_id=suppliers.s_id;
+优点：可以只输出符合要求的数据，结果更简洁
+缺点：由于只显示符合要求的数据，会造成数据丢失
+
+（2）外连接
+	1)左连接
+	左连接关键字：left [outer] join 返回包括左表在内的所有记录和右表中连接字段相等的记录
+	2）右连接
+	右连接关键字：right [outer] join 返回包括右表在内的所有记录和左表中连接字段相等的记录
+判断左右表，在连接关键字的左边无论左右链接都为左表，右边为右表
+
+mysql> create table suppliers(
+    -> s_id int not null auto_increment,
+    -> s_name varchar(50) not null,
+    -> s_city char(50) null,
+    -> s_zip char(50),
+    -> s_call char(50) not null,
+    -> primary key(s_id));
+Query OK, 0 rows affected (0.01 sec)
+
+mysql> insert into suppliers values( 101,'FastFruits','Tianjin',300000,10100), (103,'ACME','Shanghai',200000,90001),
+    -> (104,'FNK Inc','Jinan',543210,81777),
+    -> (105,'Good Set','Taiyuan',030000,22222),
+    -> (106,'Just Eat Ours','Beijing','010',45678),
+    -> (107,'S Inc','Shijiazhuang',450000,33322);
+Query OK, 6 rows affected (0.00 sec)
+
+
+子查询
+又叫做嵌套查询，指一个查询语句在另外一个查询语句内部，从4.1之后开始使用
+
+关键字
+any		满足其中的一个条件即可输出
+mysql> select num from ex1 where num > any (select num2 from ex2);
+all		满足所有条件才能输出
+mysql> select num from ex1 where num > all (select num2 from ex2);
+exists	判断子查询中的内容是否存在，如果存在执行外层查询语句，如果不存在停止外层查询，返回empty set
+mysql> select * from fruits where exists (select * from suppliers where s_id=109);
+Empty set (0.00 sec)
+
+mysql> select * from fruits where exists (select * from suppliers where s_id=108);
+not exists	判断子查询中的内容是否不存在，如果不存在执行外层查询语句，如果存在停止外层查询，返回empty set
+
+找到城市在北京的供应商，查看该供应商提供的水果
+mysql> select * from fruits,suppliers where fruits.s_id=suppliers.s_id and s_city='Beijing';
+查看每个供应商的价格最高的水果，显示供应商的编号，水果名以及水果价格
+mysql> select s_id,group_concat(f_name) as f_name,f_price from fruits where f_price in (select max(f_price) from fruits group by s_id) group by s_id;
+mysql> select s_id,group_concat(f_name) as f_name,f_price from fruits where (s_id,f_price) in (select s_id,max(f_price) from fruits group by s_id) group by s_id;
+```
+
+```
+联合查询
+将两个或者两个以上的查询语句的结果合并在一起进行查看
+select column * from 表名
+union [all]
+select column * from 表名
+如果合并查询中不加入all将会过滤重复数据，加all显示全部，在联合查询中不需要考虑数据类型因素，只需要将查看的数据进行显示即可，两个语句之间也不包含任何关联关系，在两个或者两个以上的查询语句中，查询的字段数据数量必须一致，否则报错
+mysql> select * from fruits
+    -> union all
+    -> select * from fruits;
+mysql> select * from fruits union  select * from fruits;
+mysql> select f_name from fruits
+    -> union
+    -> select s_id from suppliers;
+mysql> select s_id,f_name from fruits where f_price=10.2
+    -> union
+    -> select s_name,s_city from suppliers where s_id=105;
 ```
 
